@@ -1,0 +1,139 @@
+import 'package:expiry_track/core/constant/app_assets.dart';
+import 'package:expiry_track/core/constant/app_colors.dart';
+import 'package:expiry_track/core/services/local_notification_services.dart';
+import 'package:expiry_track/feature/home/viewmodel/home_viewmodel.dart';
+import 'package:expiry_track/feature/scanner/view_model/scanner_view_model.dart';
+import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:lottie/lottie.dart';
+import 'package:provider/provider.dart';
+
+class HomePage extends StatelessWidget {
+  const HomePage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+// Access the HomeViewModel instance
+    context.read<HomeViewModel>().getAllProductFromDB();
+
+    return Scaffold(
+      backgroundColor: AppColors.scaffoldColor,
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        child: Column(
+          children: [
+            const SizedBox(
+              height: 40,
+            ),
+             Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const Text(
+                    "Keep an eye on these products, \nit's days are coming to an end",
+                    style: TextStyle(
+                        color: AppColors.textColor,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 18)),
+                InkWell(onTap: () {
+                  LocalNotificationServices.showRepeatedNotification("NOTIFICATION", "REPEATED NOTIFICATIONS", "TESTING NOTIFICATION");
+                }, child: const Icon(Icons.notifications_active))
+              ],
+            ),
+            Expanded(
+                child: Consumer<HomeViewModel>(
+              builder: (context, provider, child) => provider
+                      .productList.isNotEmpty
+                  ? ListView.builder(
+                      itemCount: provider.productList.length,
+                      itemBuilder: (context, index) => Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4),
+                        child: Container(
+                          padding: const EdgeInsets.all(10),
+                          height: 120,
+                          width: double.maxFinite,
+                          decoration: BoxDecoration(
+                              color: AppColors.typeColor.withOpacity(0.6),
+                              borderRadius: BorderRadius.circular(10)),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Column(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    provider.productList[index].productName,
+                                    style: const TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w600,
+                                        color: AppColors.textColor),
+                                  ),
+                                  Text(
+                                      DateFormat('dd-MMM-yyyy').format(
+                                          DateTime.parse(provider
+                                              .productList[index].expiryDate)),
+                                      style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w400,
+                                          color: AppColors.textColor)),
+                                  // Text(provider.productList[index].productLocation,
+                                  //     style: const TextStyle(
+                                  //         fontSize: 16,
+                                  //         fontWeight: FontWeight.w400,
+                                  //         color: AppColors.textColor)),
+                                  Text(
+                                      provider.productList[index].quantity
+                                          .toString(),
+                                      style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w400,
+                                          color: AppColors.textColor)),
+                                ],
+                              ),
+                              RichText(
+                                  text: TextSpan(children: [
+                                TextSpan(
+                                    text: provider.productList[index].daysLeft
+                                        .toString(),
+                                    style: TextStyle(
+                                        fontSize: 24,
+                                        fontWeight: FontWeight.w700,
+                                        color: provider.productList[index]
+                                                    .daysLeft <
+                                                5
+                                            ? AppColors.toxicColor
+                                            : provider.productList[index]
+                                                        .daysLeft <
+                                                    30
+                                                ? AppColors.mediumColor
+                                                : AppColors.goodColor)),
+                                const TextSpan(
+                                    text: " days left",
+                                    style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w400,
+                                        color: AppColors.textColor)),
+                              ]))
+                            ],
+                          ),
+                        ),
+                      ),
+                    )
+                  : SizedBox(
+                      child: Center(
+                          child: Lottie.asset(AppAssets.notFoundLottie,
+                              fit: BoxFit.contain)),
+                    ),
+            ))
+          ],
+        ),
+      ),
+      floatingActionButton: Consumer<ScannerViewModel>(
+          builder: (context, provider, child) => FloatingActionButton(
+              onPressed: () => provider.scanBarcodeNormal(context),
+              child: const Icon(Icons.qr_code_scanner_outlined))),
+    );
+  }
+}
