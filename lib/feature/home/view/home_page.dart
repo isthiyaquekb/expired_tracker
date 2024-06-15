@@ -1,7 +1,9 @@
+import 'package:easy_date_timeline/easy_date_timeline.dart';
 import 'package:expiry_track/core/constant/app_assets.dart';
 import 'package:expiry_track/core/constant/app_colors.dart';
 import 'package:expiry_track/core/services/local_notification_services.dart';
 import 'package:expiry_track/feature/home/viewmodel/home_viewmodel.dart';
+import 'package:expiry_track/feature/inventory/view_model/inventory_view_model.dart';
 import 'package:expiry_track/feature/scanner/view_model/scanner_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -14,7 +16,9 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
 // Access the HomeViewModel instance
-    context.read<HomeViewModel>().getAllProductFromDB();
+    final homeProvider = Provider.of<HomeViewModel>(context, listen: false);
+    final inventoryProvider = Provider.of<InventoryViewModel>(context, listen: false);
+    homeProvider.getAllProductFromDB();
 
     return Scaffold(
       backgroundColor: AppColors.scaffoldColor,
@@ -25,7 +29,7 @@ class HomePage extends StatelessWidget {
             const SizedBox(
               height: 40,
             ),
-             Row(
+            Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
@@ -35,22 +39,46 @@ class HomePage extends StatelessWidget {
                         color: AppColors.textColor,
                         fontWeight: FontWeight.w600,
                         fontSize: 18)),
-                InkWell(onTap: () {
-                  LocalNotificationServices.showRepeatedNotification("NOTIFICATION", "REPEATED NOTIFICATIONS", "TESTING NOTIFICATION");
-                }, child: const Icon(Icons.notifications_active))
+                InkWell(
+                    onTap: () {
+                      LocalNotificationServices.showRepeatedNotification(
+                          "NOTIFICATION",
+                          "REPEATED NOTIFICATIONS",
+                          "TESTING NOTIFICATION");
+                    },
+                    child: const Icon(Icons.notifications_active))
               ],
+            ),
+            Consumer<HomeViewModel>(
+              builder: (context, dateProvider, child) => SizedBox(
+                width: double.maxFinite,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: EasyInfiniteDateTimeLine(
+                    showTimelineHeader: false,
+                    selectionMode: const SelectionMode.autoCenter(),
+                    controller: dateProvider.easyDateController,
+                    firstDate: DateTime.now(),
+                    focusDate: dateProvider.focusDate,
+                    lastDate: DateTime(2024, 12, 31),
+                    activeColor: AppColors.primaryColor,
+                    onDateChange: (selectedDate) {
+                      dateProvider.setSelectedDate(selectedDate);
+                    },
+                  ),
+                ),
+              ),
             ),
             Expanded(
                 child: Consumer<HomeViewModel>(
               builder: (context, provider, child) => provider
-                      .productList.isNotEmpty
+                      .productFilteredList.isNotEmpty
                   ? ListView.builder(
-                      itemCount: provider.productList.length,
+                      itemCount: provider.productFilteredList.length,
                       itemBuilder: (context, index) => Padding(
                         padding: const EdgeInsets.symmetric(vertical: 4),
                         child: Container(
                           padding: const EdgeInsets.all(10),
-                          height: 120,
                           width: double.maxFinite,
                           decoration: BoxDecoration(
                               color: AppColors.typeColor.withOpacity(0.6),
@@ -64,47 +92,67 @@ class HomePage extends StatelessWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    provider.productList[index].productName,
+                                    provider
+                                        .productFilteredList[index].productName,
                                     style: const TextStyle(
                                         fontSize: 18,
                                         fontWeight: FontWeight.w600,
                                         color: AppColors.textColor),
                                   ),
-                                  Text(
-                                      DateFormat('dd-MMM-yyyy').format(
-                                          DateTime.parse(provider
-                                              .productList[index].expiryDate)),
-                                      style: const TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w400,
-                                          color: AppColors.textColor)),
-                                  // Text(provider.productList[index].productLocation,
-                                  //     style: const TextStyle(
-                                  //         fontSize: 16,
-                                  //         fontWeight: FontWeight.w400,
-                                  //         color: AppColors.textColor)),
-                                  Text(
-                                      provider.productList[index].quantity
-                                          .toString(),
-                                      style: const TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w400,
-                                          color: AppColors.textColor)),
+                                  RichText(
+                                      text: TextSpan(children: [
+                                        const TextSpan(
+                                            text: "Expiry Date:",
+                                            style: TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w400,
+                                                color: AppColors.textColor)),
+                                        TextSpan(
+                                            text: DateFormat('dd-MMM-yyyy').format(
+                                                DateTime.parse(provider
+                                                    .productFilteredList[index]
+                                                    .expiryDate)),
+                                            style: const TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w700,
+                                                color: AppColors.textColor)),
+                                      ])),
+                                  RichText(
+                                      text: TextSpan(children: [
+                                        const TextSpan(
+                                            text: "QTY:",
+                                            style: TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w400,
+                                                color: AppColors.textColor)),
+                                        TextSpan(
+                                            text: provider
+                                                .productFilteredList[index].quantity
+                                                .toString(),
+                                            style: const TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w700,
+                                                color: AppColors.textColor)),
+                                      ])),
                                 ],
                               ),
                               RichText(
                                   text: TextSpan(children: [
                                 TextSpan(
-                                    text: provider.productList[index].daysLeft
+                                    text: provider
+                                        .productFilteredList[index].daysLeft
                                         .toString(),
                                     style: TextStyle(
                                         fontSize: 24,
                                         fontWeight: FontWeight.w700,
-                                        color: provider.productList[index]
+                                        color: provider
+                                                    .productFilteredList[index]
                                                     .daysLeft <
                                                 5
                                             ? AppColors.toxicColor
-                                            : provider.productList[index]
+                                            : provider
+                                                        .productFilteredList[
+                                                            index]
                                                         .daysLeft <
                                                     30
                                                 ? AppColors.mediumColor
@@ -132,7 +180,14 @@ class HomePage extends StatelessWidget {
       ),
       floatingActionButton: Consumer<ScannerViewModel>(
           builder: (context, provider, child) => FloatingActionButton(
-              onPressed: () => provider.scanBarcodeNormal(context),
+              onPressed: () {
+                inventoryProvider.nameController.clear();
+                inventoryProvider.quantityController.clear();
+                inventoryProvider.dateController.clear();
+                inventoryProvider.barcodeController.clear();
+                inventoryProvider.batchNoController.clear();
+                provider.scanBarcodeNormal(context);
+              },
               child: const Icon(Icons.qr_code_scanner_outlined))),
     );
   }
