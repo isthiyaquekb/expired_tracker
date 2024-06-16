@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:expiry_track/core/local_db/local_database.dart';
 import 'package:expiry_track/feature/home/viewmodel/home_viewmodel.dart';
@@ -19,6 +20,7 @@ class InventoryViewModel extends ChangeNotifier {
   final formKey = GlobalKey<FormState>();
 
   var currentDate = DateTime.now();
+  var currentDateTime = DateTime.now();
   var dayLeft = 0;
   var nowDate = "";
   var selectedDate = "";
@@ -69,8 +71,9 @@ class InventoryViewModel extends ChangeNotifier {
         initialDate: currentDate,
         firstDate: DateTime.now(),
         lastDate: DateTime(2040));
+
     if (pickedDate != null && pickedDate != currentDate) {
-      currentDate = pickedDate;
+      combineDateWithCurrentTime(pickedDate);
     }
 
     nowDate = DateFormat('yyyy-MM-dd').format(currentDate).toString();
@@ -80,6 +83,26 @@ class InventoryViewModel extends ChangeNotifier {
     print("CURRENT DATE SELECTED :$selectedDate");
 
     notifyListeners();
+  }
+
+  void combineDateWithCurrentTime(DateTime pickedDate) {
+    DateTime now = DateTime.now();
+    DateTime combinedDateTime = DateTime(
+      pickedDate.year,
+      pickedDate.month,
+      pickedDate.day,
+      now.hour,
+      now.minute,
+      now.second,
+      now.millisecond,
+      now.microsecond,
+    );
+    print("Combined DateTime: $combinedDateTime");
+    currentDate = combinedDateTime;
+    print('DATETIME NOW:${DateTime.now()}');
+    print('CURRENT PICKED DATE TIME:${combinedDateTime}');
+    print('CURRENT PICKED DATE:${currentDate}');
+
   }
 
   void submit() {

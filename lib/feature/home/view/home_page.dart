@@ -41,10 +41,7 @@ class HomePage extends StatelessWidget {
                         fontSize: 18)),
                 InkWell(
                     onTap: () {
-                      LocalNotificationServices.showRepeatedNotification(
-                          "NOTIFICATION",
-                          "REPEATED NOTIFICATIONS",
-                          "TESTING NOTIFICATION");
+
                     },
                     child: const Icon(Icons.notifications_active))
               ],

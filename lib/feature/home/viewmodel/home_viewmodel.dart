@@ -54,8 +54,11 @@ class HomeViewModel extends ChangeNotifier {
     for (var element in dataList!) {
       var data = InventoryModel.fromMap(element);
       calculateDaysRemaining(DateTime.parse(data.expiryDate), DateTime.now(),data);
+      print("Product EXPIRY DATE ${data.expiryDate}");
     }
-    print("Product List home view $productList");
+    setSelectedDate(DateTime.parse(InventoryModel.fromMap(dataList.first).expiryDate));
+
+    print("Product List home view ${InventoryModel.fromMap(dataList.first).expiryDate}");
     notifyListeners();
   }
 

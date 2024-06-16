@@ -25,8 +25,8 @@ class LocalNotificationServices {
     const DarwinInitializationSettings initializationSettingsDarwin =
         DarwinInitializationSettings(onDidReceiveLocalNotification: null);
 
-    final InitializationSettings initializationSettings =
-        const InitializationSettings(
+    const InitializationSettings initializationSettings =
+        InitializationSettings(
       android: initializationSettingsAndroid,
       iOS: initializationSettingsDarwin,
     );

@@ -1,7 +1,7 @@
 class AppAssets {
   AppAssets._();
 
-  static const String appLogo = "assets/images/png/app_logo.png";
+  static const String appLogo = "assets/png/logo2.png";
 
   // OnBoard Screen
   static const String onBoard1 = "assets/png/onboardQR1.png";
